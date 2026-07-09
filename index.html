@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tipp resultatet – VM-kveld i Tælet</title>
+<meta name="description" content="Tipp resultatet i VM-kvartfinalen Norge–England og vinn billetter til Bygdekinoen!">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#00205B; --red:#C8102E; --gold:#E8B94A; --cream:#FAF7F1;
+  --beige:#E9E4DB; --grey:#6B6459; --dark:#3A3630; --border:#DDD6CA;
+  --head:'Archivo Black',sans-serif; --body:'Familjen Grotesk',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--navy);color:var(--cream);font-family:var(--body);min-height:100vh;display:flex;flex-direction:column}
+.stripes div{height:6px}
+.stripes .s1{background:var(--red)} .stripes .s2{background:var(--cream);height:3px} .stripes .s3{background:var(--gold)}
+main{flex:1;width:100%;max-width:480px;margin:0 auto;padding:28px 20px 40px;text-align:center}
+.kicker{font-weight:700;font-size:13px;letter-spacing:4px;color:var(--gold);text-transform:uppercase}
+h1{font-family:var(--head);font-size:44px;line-height:.95;margin:10px 0 6px;letter-spacing:-1px}
+.sub{font-weight:600;font-size:17px;opacity:.95}
+.matchcard{background:var(--cream);color:var(--dark);border-radius:22px;padding:22px 16px;margin-top:22px}
+.teams{display:flex;align-items:stretch;justify-content:center;gap:10px}
+.team{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.flag{width:74px;height:54px;border-radius:8px}
+.flag.no{background-color:var(--red);background-image:linear-gradient(90deg,transparent 0 31.8%,#00205B 31.8% 40.9%,transparent 40.9%),linear-gradient(0deg,transparent 0 43.7%,#00205B 43.7% 56.3%,transparent 56.3%),linear-gradient(90deg,transparent 0 27.3%,#FAF7F1 27.3% 45.5%,transparent 45.5%),linear-gradient(0deg,transparent 0 37.5%,#FAF7F1 37.5% 62.5%,transparent 62.5%)}
+.flag.en{background-color:#fff;border:2px solid var(--border);background-image:linear-gradient(90deg,transparent 0 43%,#C8102E 43% 57%,transparent 57%),linear-gradient(0deg,transparent 0 41%,#C8102E 41% 59%,transparent 59%)}
+.tname{font-family:var(--head);font-size:20px;color:var(--navy)}
+.mot{font-family:var(--head);color:var(--red);font-size:16px;align-self:center}
+.score{display:flex;align-items:center;gap:10px;margin-top:4px}
+.score button{width:52px;height:52px;border-radius:50%;border:0;background:var(--beige);color:var(--navy);font-family:var(--head);font-size:26px;cursor:pointer;touch-action:manipulation}
+.score button:active{background:var(--gold)}
+.score .val{font-family:var(--head);font-size:44px;color:var(--navy);min-width:44px}
+label{display:block;text-align:left;font-weight:700;color:var(--navy);margin:16px 4px 6px;font-size:15px}
+input[type=text],input[type=tel]{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;font-family:var(--body);font-size:17px;background:#fff;color:var(--dark)}
+input:focus{outline:3px solid var(--gold)}
+.sendbtn{width:100%;margin-top:22px;background:var(--red);color:var(--cream);border:0;border-radius:999px;padding:18px;font-family:var(--head);font-size:20px;cursor:pointer}
+.sendbtn:disabled{opacity:.5}
+.prize{background:var(--navy);color:var(--cream);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px;margin-top:18px}
+.prize b{color:var(--gold)}
+.badge{display:inline-block;background:var(--red);color:var(--cream);border-radius:999px;padding:9px 20px;font-family:var(--head);font-size:13px;margin-top:22px}
+.foot{font-weight:600;font-size:13px;opacity:.85;margin-top:10px;letter-spacing:1px}
+.err{color:var(--red);font-weight:700;margin-top:12px;display:none}
+#takk{display:none}
+#takk .big{font-size:74px;margin:18px 0 2px}
+#takk h2{font-family:var(--head);font-size:34px;margin:6px 0}
+#takk p{font-size:17px;font-weight:600;line-height:1.5}
+.notcfg{background:var(--gold);color:var(--navy);border-radius:14px;padding:14px;font-weight:700;margin-top:20px;display:none}
+</style>
+</head>
+<body>
+<div class="stripes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
+
+<main>
+  <div class="kicker">Selbu kommune inviterer til</div>
+  <h1>VM-KVELD<br>I TÆLET</h1>
+  <div class="sub">Tipp resultatet i kvartfinalen!</div>
+
+  <div class="notcfg" id="notcfg">⚠️ Siden er ikke koblet til Google Forms ennå – se oppsettet i toppen av filen.</div>
+
+  <div class="matchcard" id="skjema">
+    <div class="teams">
+      <div class="team">
+        <div class="flag no"></div>
+        <div class="tname">NORGE</div>
+        <div class="score">
+          <button type="button" aria-label="Færre mål Norge" onclick="bump('no',-1)">−</button>
+          <span class="val" id="val-no">2</span>
+          <button type="button" aria-label="Flere mål Norge" onclick="bump('no',1)">+</button>
+        </div>
+      </div>
+      <div class="mot">MOT</div>
+      <div class="team">
+        <div class="flag en"></div>
+        <div class="tname">ENGLAND</div>
+        <div class="score">
+          <button type="button" aria-label="Færre mål England" onclick="bump('en',-1)">−</button>
+          <span class="val" id="val-en">1</span>
+          <button type="button" aria-label="Flere mål England" onclick="bump('en',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <label for="navn">Navn</label>
+    <input type="text" id="navn" autocomplete="name" placeholder="Fornavn og etternavn">
+    <label for="tlf">Telefonnummer <span style="font-weight:400;color:var(--grey)">(så vi får varslet vinneren)</span></label>
+    <input type="tel" id="tlf" autocomplete="tel" placeholder="123 45 678">
+
+    <button class="sendbtn" id="send" onclick="sendTips()">SEND TIPSET! ⚽</button>
+    <div class="err" id="err"></div>
+
+    <div class="prize">🎁 Premie: <b>To billetter til valgfri forestilling på Bygdekinoen i høst</b><br>Nærmeste tips vinner – trekning ved likhet. Ett tips per person.</div>
+  </div>
+
+  <div id="takk">
+    <div class="big">🎉</div>
+    <h2>TIPSET ER REGISTRERT!</h2>
+    <p id="takktekst"></p>
+    <p>Følg med på storskjermen – der ser du hva salen tror underveis.<br>Lykke til – og heia Norge! 🇳🇴</p>
+  </div>
+
+  <div class="badge">RUSFRITT FAMILIEARRANGEMENT</div>
+  <div class="foot">ARRANGØR: SELBU KOMMUNE • TÆLET KULTURSAL • LØRDAG 11. JULI KL. 23.00</div>
+</main>
+
+<div class="stripes"><div class="s3"></div><div class="s2"></div><div class="s1"></div></div>
+
+<script>
+/* ================= OPPSETT =================
+   1) Lag Google-skjemaet (Navn, Telefon, Norge – mål, England – mål).
+   2) Klikk ⋮ -> «Hent forhåndsutfylt lenke», fyll ut testverdier, kopier lenken.
+      Den ser slik ut: .../formResponse?...entry.111=Ola&entry.222=99887766&entry.333=2&entry.444=1
+   3) Lim inn FORM_ID (den lange koden mellom /d/e/ og /viewform i skjemalenken)
+      og de fire entry-numrene under.                                          */
+const FORM_ID   = '1FAIpQLSfdTZM5560N6DxXSMlSigk_KCRq3S1nCdTIVINnnBwVKgxGjA';
+const ENTRY_NAVN   = 'entry.984447497';
+const ENTRY_TLF    = 'entry.362741569';
+const ENTRY_NORGE  = 'entry.603326978';
+const ENTRY_ENGLAND = 'entry.1061923113';
+/* =========================================== */
+
+const configured = FORM_ID && ENTRY_NAVN && ENTRY_TLF && ENTRY_NORGE && ENTRY_ENGLAND;
+if (!configured) document.getElementById('notcfg').style.display = 'block';
+
+const score = { no: 2, en: 1 };
+function bump(team, d){
+  score[team] = Math.max(0, Math.min(10, score[team] + d)); // skjemaet godtar 0–10
+  document.getElementById('val-' + team).textContent = score[team];
+}
+
+function fail(msg){
+  const e = document.getElementById('err');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+async function sendTips(){
+  const navn = document.getElementById('navn').value.trim();
+  const tlf = document.getElementById('tlf').value.trim();
+  document.getElementById('err').style.display = 'none';
+  if (!navn) return fail('Skriv inn navnet ditt!');
+  if (tlf.replace(/\D/g,'').length < 8) return fail('Skriv inn et gyldig telefonnummer (8 siffer).');
+  if (!configured) return fail('Siden er ikke koblet til Google Forms ennå.');
+  if (localStorage.getItem('vm-tips-sendt')) return fail('Du har allerede tippet fra denne mobilen. Ett tips per person!');
+
+  const btn = document.getElementById('send');
+  btn.disabled = true; btn.textContent = 'SENDER …';
+  const body = new URLSearchParams();
+  body.set(ENTRY_NAVN, navn);
+  body.set(ENTRY_TLF, tlf);
+  body.set(ENTRY_NORGE, score.no);
+  body.set(ENTRY_ENGLAND, score.en);
+  try {
+    await fetch('https://docs.google.com/forms/d/e/' + FORM_ID + '/formResponse', {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString()
+    });
+    localStorage.setItem('vm-tips-sendt', '1');
+    document.getElementById('skjema').style.display = 'none';
+    document.getElementById('takktekst').innerHTML =
+      'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b>';
+    document.getElementById('takk').style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  } catch(e){
+    fail('Noe gikk galt – prøv igjen!');
+    btn.disabled = false; btn.textContent = 'SEND TIPSET! ⚽';
+  }
+}
+</script>
+</body>
+</html>
