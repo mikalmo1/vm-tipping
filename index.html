@@ -135,6 +135,11 @@ const ENTRY_ENGLAND = 'entry.1061923113';
 const ENTRY_VIDERE  = 'entry.715181599';
 /* =========================================== */
 
+// Skjult tilbakestilling for testing: åpne siden med ?nullstill=1
+if (new URLSearchParams(location.search).get('nullstill') === '1'){
+  localStorage.removeItem('vm-tips-sendt');
+}
+
 const configured = FORM_ID && ENTRY_NAVN && ENTRY_TLF && ENTRY_NORGE && ENTRY_ENGLAND;
 if (!configured) document.getElementById('notcfg').style.display = 'block';
 
