@@ -36,6 +36,11 @@ h1{font-family:var(--head);font-size:44px;line-height:.95;margin:10px 0 6px;lett
 label{display:block;text-align:left;font-weight:700;color:var(--navy);margin:16px 4px 6px;font-size:15px}
 input[type=text],input[type=tel]{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;font-family:var(--body);font-size:17px;background:#fff;color:var(--dark)}
 input:focus{outline:3px solid var(--gold)}
+.ordtid{margin-top:14px;font-weight:700;font-size:13px;color:var(--grey);background:var(--beige);border-radius:999px;padding:7px 12px;display:inline-block}
+.advance{display:flex;gap:10px;margin-top:4px}
+.advbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 8px;border:2px solid var(--border);border-radius:12px;background:#fff;font-family:var(--head);font-size:16px;color:var(--navy);cursor:pointer;touch-action:manipulation}
+.advbtn.sel{border-color:var(--red);background:var(--gold)}
+.flag.mini{width:30px;height:22px;border-radius:4px}
 .sendbtn{width:100%;margin-top:22px;background:var(--red);color:var(--cream);border:0;border-radius:999px;padding:18px;font-family:var(--head);font-size:20px;cursor:pointer}
 .sendbtn:disabled{opacity:.5}
 .prize{background:var(--navy);color:var(--cream);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px;margin-top:18px}
@@ -83,6 +88,14 @@ input:focus{outline:3px solid var(--gold)}
       </div>
     </div>
 
+    <div class="ordtid">Tipset gjelder resultatet etter ordinær tid (90 min)</div>
+
+    <label style="text-align:center">Hvem går videre til semifinalen?<br><span style="font-weight:400;color:var(--grey);font-size:13px">(teller ved ekstraomganger/straffer – og som skille i trekningen)</span></label>
+    <div class="advance">
+      <button type="button" class="advbtn" id="adv-Norge" onclick="setAdv('Norge')"><span class="flag no mini"></span>NORGE</button>
+      <button type="button" class="advbtn" id="adv-England" onclick="setAdv('England')"><span class="flag en mini"></span>ENGLAND</button>
+    </div>
+
     <label for="navn">Navn</label>
     <input type="text" id="navn" autocomplete="name" placeholder="Fornavn og etternavn">
     <label for="tlf">Telefonnummer <span style="font-weight:400;color:var(--grey)">(så vi får varslet vinneren)</span></label>
@@ -119,12 +132,19 @@ const ENTRY_NAVN   = 'entry.984447497';
 const ENTRY_TLF    = 'entry.362741569';
 const ENTRY_NORGE  = 'entry.603326978';
 const ENTRY_ENGLAND = 'entry.1061923113';
+const ENTRY_VIDERE  = 'entry.715181599';
 /* =========================================== */
 
 const configured = FORM_ID && ENTRY_NAVN && ENTRY_TLF && ENTRY_NORGE && ENTRY_ENGLAND;
 if (!configured) document.getElementById('notcfg').style.display = 'block';
 
 const score = { no: 2, en: 1 };
+let advance = '';
+function setAdv(v){
+  advance = v;
+  document.getElementById('adv-Norge').classList.toggle('sel', v === 'Norge');
+  document.getElementById('adv-England').classList.toggle('sel', v === 'England');
+}
 function bump(team, d){
   score[team] = Math.max(0, Math.min(10, score[team] + d)); // skjemaet godtar 0–10
   document.getElementById('val-' + team).textContent = score[team];
@@ -141,6 +161,7 @@ async function sendTips(){
   document.getElementById('err').style.display = 'none';
   if (!navn) return fail('Skriv inn navnet ditt!');
   if (tlf.replace(/\D/g,'').length < 8) return fail('Skriv inn et gyldig telefonnummer (8 siffer).');
+  if (!advance) return fail('Velg hvem du tror går videre til semifinalen!');
   if (!configured) return fail('Siden er ikke koblet til Google Forms ennå.');
   if (localStorage.getItem('vm-tips-sendt')) return fail('Du har allerede tippet fra denne mobilen. Ett tips per person!');
 
@@ -151,6 +172,7 @@ async function sendTips(){
   body.set(ENTRY_TLF, tlf);
   body.set(ENTRY_NORGE, score.no);
   body.set(ENTRY_ENGLAND, score.en);
+  body.set(ENTRY_VIDERE, advance);
   try {
     await fetch('https://docs.google.com/forms/d/e/' + FORM_ID + '/formResponse', {
       method: 'POST', mode: 'no-cors',
@@ -160,7 +182,7 @@ async function sendTips(){
     localStorage.setItem('vm-tips-sendt', '1');
     document.getElementById('skjema').style.display = 'none';
     document.getElementById('takktekst').innerHTML =
-      'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b>';
+      'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b><br>og at <b>' + advance + '</b> går videre til semifinalen';
     document.getElementById('takk').style.display = 'block';
     window.scrollTo({top: 0, behavior: 'smooth'});
   } catch(e){
