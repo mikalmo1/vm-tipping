@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tipp resultatet – VM-kveld i Tælet</title>
-<meta name="description" content="Tipp resultatet i VM-kvartfinalen Norge–England og vinn billetter til Bygdekinoen!">
+<meta name="description" content="Tipp resultatet i VM-kvartfinalen Norge–England og vinn en Adidas Trionda – den offisielle VM-ballen!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <style>
@@ -52,6 +52,10 @@ input:focus{outline:3px solid var(--gold)}
 #takk .big{font-size:74px;margin:18px 0 2px}
 #takk h2{font-family:var(--head);font-size:34px;margin:6px 0}
 #takk p{font-size:17px;font-weight:600;line-height:1.5}
+#stengt{display:none}
+#stengt .big{font-size:74px;margin:18px 0 2px}
+#stengt h2{font-family:var(--head);font-size:34px;margin:6px 0;color:var(--gold)}
+#stengt p{font-size:17px;font-weight:600;line-height:1.5}
 .notcfg{background:var(--gold);color:var(--navy);border-radius:14px;padding:14px;font-weight:700;margin-top:20px;display:none}
 </style>
 </head>
@@ -104,7 +108,7 @@ input:focus{outline:3px solid var(--gold)}
     <button class="sendbtn" id="send" onclick="sendTips()">SEND TIPSET! ⚽</button>
     <div class="err" id="err"></div>
 
-    <div class="prize">🎁 Premie: <b>To billetter til valgfri forestilling på Bygdekinoen i høst</b><br>Nærmeste tips vinner – trekning ved likhet. Ett tips per person.</div>
+    <div class="prize">🎁 Premie: <b>3 × Adidas Trionda – den offisielle VM-ballen!</b><br>De tre beste tipsene vinner hver sin ball – trekning ved likhet. Ett tips per person.</div>
   </div>
 
   <div id="takk">
@@ -112,6 +116,12 @@ input:focus{outline:3px solid var(--gold)}
     <h2>TIPSET ER REGISTRERT!</h2>
     <p id="takktekst"></p>
     <p>Følg med på storskjermen – der ser du hva salen tror underveis.<br>Lykke til – og heia Norge! 🇳🇴</p>
+  </div>
+
+  <div id="stengt">
+    <div class="big">⏱️</div>
+    <h2>TIPPINGEN ER STENGT</h2>
+    <p>Kampen har startet – nå er det dessverre for sent å tippe.<br>Følg med på storskjermen: trekningen skjer etter kampen. Heia Norge! 🇳🇴</p>
   </div>
 
   <div class="badge">RUSFRITT FAMILIEARRANGEMENT</div>
@@ -133,7 +143,18 @@ const ENTRY_TLF    = 'entry.362741569';
 const ENTRY_NORGE  = 'entry.603326978';
 const ENTRY_ENGLAND = 'entry.1061923113';
 const ENTRY_VIDERE  = 'entry.715181599';
+/* Tippingen stenger ved kampstart. Endre tidspunktet her ved behov
+   (fast tidspunkt i norsk sommertid, +02:00). */
+const STENGER = '2026-07-11T23:00:00+02:00';
 /* =========================================== */
+
+function erStengt(){ return Date.now() >= new Date(STENGER).getTime(); }
+function visStengt(){
+  document.getElementById('skjema').style.display = 'none';
+  document.getElementById('takk').style.display = 'none';
+  document.getElementById('stengt').style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
 
 // Skjult tilbakestilling for testing: åpne siden med ?nullstill=1
 if (new URLSearchParams(location.search).get('nullstill') === '1'){
@@ -142,6 +163,10 @@ if (new URLSearchParams(location.search).get('nullstill') === '1'){
 
 const configured = FORM_ID && ENTRY_NAVN && ENTRY_TLF && ENTRY_NORGE && ENTRY_ENGLAND;
 if (!configured) document.getElementById('notcfg').style.display = 'block';
+
+// Stengt ved kampstart? Vis stengt-melding, ellers planlegg stenging.
+if (erStengt()) visStengt();
+else { const ms = new Date(STENGER).getTime() - Date.now(); if (ms > 0 && ms < 2147483647) setTimeout(visStengt, ms); }
 
 const score = { no: 2, en: 1 };
 let advance = '';
@@ -161,6 +186,7 @@ function fail(msg){
 }
 
 async function sendTips(){
+  if (erStengt()){ visStengt(); return; }
   const navn = document.getElementById('navn').value.trim();
   const tlf = document.getElementById('tlf').value.trim();
   document.getElementById('err').style.display = 'none';
