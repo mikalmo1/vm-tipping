@@ -41,6 +41,7 @@ input:focus{outline:3px solid var(--gold)}
 .advbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 8px;border:2px solid var(--border);border-radius:12px;background:#fff;font-family:var(--head);font-size:16px;color:var(--navy);cursor:pointer;touch-action:manipulation}
 .advbtn.sel{border-color:var(--red);background:var(--gold)}
 .flag.mini{width:30px;height:22px;border-radius:4px}
+#videreauto{display:none;background:var(--beige);color:var(--navy);border-radius:12px;padding:13px;font-weight:700;font-size:15px;margin-top:8px}
 .sendbtn{width:100%;margin-top:22px;background:var(--red);color:var(--cream);border:0;border-radius:999px;padding:18px;font-family:var(--head);font-size:20px;cursor:pointer}
 .sendbtn:disabled{opacity:.5}
 .prize{background:var(--navy);color:var(--cream);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px;margin-top:18px}
@@ -92,13 +93,16 @@ input:focus{outline:3px solid var(--gold)}
       </div>
     </div>
 
-    <div class="ordtid">Tipset gjelder resultatet etter ordinær tid (90 min)</div>
+    <div class="ordtid">⏱️ Tipp sluttresultatet <b>etter ordinær tid</b> (90 min – uten ekstraomganger)</div>
 
-    <label style="text-align:center">Hvem går videre til semifinalen?<br><span style="font-weight:400;color:var(--grey);font-size:13px">(teller ved ekstraomganger/straffer – og som skille i trekningen)</span></label>
-    <div class="advance">
-      <button type="button" class="advbtn" id="adv-Norge" onclick="setAdv('Norge')"><span class="flag no mini"></span>NORGE</button>
-      <button type="button" class="advbtn" id="adv-England" onclick="setAdv('England')"><span class="flag en mini"></span>ENGLAND</button>
+    <div id="videreblokk">
+      <label style="text-align:center">Uavgjort – hvem går videre til semifinalen?<br><span style="font-weight:400;color:var(--grey);font-size:13px">(ekstraomganger/straffer avgjør – brukes som skille i trekningen)</span></label>
+      <div class="advance">
+        <button type="button" class="advbtn" id="adv-Norge" onclick="setAdv('Norge')"><span class="flag no mini"></span>NORGE</button>
+        <button type="button" class="advbtn" id="adv-England" onclick="setAdv('England')"><span class="flag en mini"></span>ENGLAND</button>
+      </div>
     </div>
+    <div id="videreauto"></div>
 
     <label for="navn">Navn</label>
     <input type="text" id="navn" autocomplete="name" placeholder="Fornavn og etternavn">
@@ -175,15 +179,34 @@ else { const ms = new Date(STENGER).getTime() - Date.now(); if (ms > 0 && ms < 2
 
 const score = { no: 2, en: 1 };
 let advance = '';
-function setAdv(v){
-  advance = v;
+let advAuto = false;   // ble «videre» satt automatisk (avgjort resultat)?
+function setAdvUI(v){
   document.getElementById('adv-Norge').classList.toggle('sel', v === 'Norge');
   document.getElementById('adv-England').classList.toggle('sel', v === 'England');
+}
+function setAdv(v){ advance = v; advAuto = false; setAdvUI(v); }  // brukerens valg (kun ved uavgjort)
+function updateVidere(){
+  const uavgjort = score.no === score.en;
+  const blokk = document.getElementById('videreblokk');
+  const auto = document.getElementById('videreauto');
+  if (uavgjort){
+    if (advAuto){ advance = ''; advAuto = false; setAdvUI(''); }  // fjern auto-verdi, krev bevisst valg
+    blokk.style.display = '';
+    auto.style.display = 'none';
+  } else {
+    const vinner = score.no > score.en ? 'Norge' : 'England';
+    advance = vinner; advAuto = true; setAdvUI('');
+    blokk.style.display = 'none';
+    auto.textContent = '→ ' + vinner + ' går videre til semifinalen';
+    auto.style.display = 'block';
+  }
 }
 function bump(team, d){
   score[team] = Math.max(0, Math.min(10, score[team] + d)); // skjemaet godtar 0–10
   document.getElementById('val-' + team).textContent = score[team];
+  updateVidere();
 }
+updateVidere();
 
 function fail(msg){
   const e = document.getElementById('err');
@@ -197,7 +220,7 @@ async function sendTips(){
   document.getElementById('err').style.display = 'none';
   if (!navn) return fail('Skriv inn navnet ditt!');
   if (tlf.replace(/\D/g,'').length < 8) return fail('Skriv inn et gyldig telefonnummer (8 siffer).');
-  if (!advance) return fail('Velg hvem du tror går videre til semifinalen!');
+  if (!advance) return fail('Tipset ditt står uavgjort – velg hvem du tror går videre!');
   if (!configured) return fail('Siden er ikke koblet til Google Forms ennå.');
   if (localStorage.getItem(LOCK_KEY)) return fail('Du har allerede tippet fra denne mobilen. Ett tips per person!');
 
@@ -218,7 +241,8 @@ async function sendTips(){
     localStorage.setItem(LOCK_KEY, '1');
     document.getElementById('skjema').style.display = 'none';
     document.getElementById('takktekst').innerHTML =
-      'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b><br>og at <b>' + advance + '</b> går videre til semifinalen';
+      'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b>'
+      + (score.no === score.en ? '<br>og at <b>' + advance + '</b> går videre etter ekstraomganger' : '');
     document.getElementById('takk').style.display = 'block';
     window.scrollTo({top: 0, behavior: 'smooth'});
   } catch(e){
