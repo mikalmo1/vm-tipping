@@ -146,6 +146,11 @@ const ENTRY_VIDERE  = 'entry.715181599';
 /* Tippingen stenger ved kampstart. Endre tidspunktet her ved behov
    (fast tidspunkt i norsk sommertid, +02:00). */
 const STENGER = '2026-07-11T23:00:00+02:00';
+/* Nullstilling av «én stemme per mobil»: øk TIPPERUNDE med 1 for å låse opp
+   sperren for ALLE mobiler (alle får da stemme på nytt). Husk å slette
+   svarene i Google-skjemaet også – se instruksjon. */
+const TIPPERUNDE = '2';
+const LOCK_KEY = 'vm-tips-sendt-' + TIPPERUNDE;
 /* =========================================== */
 
 function erStengt(){ return Date.now() >= new Date(STENGER).getTime(); }
@@ -156,9 +161,9 @@ function visStengt(){
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-// Skjult tilbakestilling for testing: åpne siden med ?nullstill=1
+// Skjult tilbakestilling for denne mobilen: åpne siden med ?nullstill=1
 if (new URLSearchParams(location.search).get('nullstill') === '1'){
-  localStorage.removeItem('vm-tips-sendt');
+  Object.keys(localStorage).filter(k => k.indexOf('vm-tips-sendt') === 0).forEach(k => localStorage.removeItem(k));
 }
 
 const configured = FORM_ID && ENTRY_NAVN && ENTRY_TLF && ENTRY_NORGE && ENTRY_ENGLAND;
@@ -194,7 +199,7 @@ async function sendTips(){
   if (tlf.replace(/\D/g,'').length < 8) return fail('Skriv inn et gyldig telefonnummer (8 siffer).');
   if (!advance) return fail('Velg hvem du tror går videre til semifinalen!');
   if (!configured) return fail('Siden er ikke koblet til Google Forms ennå.');
-  if (localStorage.getItem('vm-tips-sendt')) return fail('Du har allerede tippet fra denne mobilen. Ett tips per person!');
+  if (localStorage.getItem(LOCK_KEY)) return fail('Du har allerede tippet fra denne mobilen. Ett tips per person!');
 
   const btn = document.getElementById('send');
   btn.disabled = true; btn.textContent = 'SENDER …';
@@ -210,7 +215,7 @@ async function sendTips(){
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString()
     });
-    localStorage.setItem('vm-tips-sendt', '1');
+    localStorage.setItem(LOCK_KEY, '1');
     document.getElementById('skjema').style.display = 'none';
     document.getElementById('takktekst').innerHTML =
       'Du tippet <b style="font-family:var(--head)">Norge ' + score.no + ' – ' + score.en + ' England</b><br>og at <b>' + advance + '</b> går videre til semifinalen';
